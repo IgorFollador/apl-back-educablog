@@ -1,18 +1,14 @@
 services:
   - name: app
     type: web
-    env: docker
+    plan: free
+    runtime: docker
     dockerfilePath: ./Dockerfile
-    buildCommand: ""
+    buildCommand: ""  
     startCommand: ""
     envVars:
-      - key: DATABASE_URL
-        fromService:
-          name: postgres
-          type: postgres
-          property: connectionString
-    ports:
-      - port: 3010
+    - key: PORT
+      value: 3010
 
   - name: prometheus
     type: web
@@ -20,12 +16,9 @@ services:
     dockerfilePath: ./Dockerfile
     buildCommand: ""
     startCommand: "--config.file=/etc/prometheus/prometheus.yml"
-    mounts:
-      - path: /etc/prometheus/prometheus.yml
-        volume:
-          name: prometheus-config
-    ports:
-      - port: 9090
+    envVars:
+      - key: PORT
+        value: 9090
 
   - name: grafana
     type: web
@@ -36,12 +29,5 @@ services:
     envVars:
       - key: GF_SECURITY_ADMIN_PASSWORD
         value: ${GRAFANA_ADMIN_PASSWORD}
-    ports:
-      - port: 3000
-    dependencies:
-      - name: prometheus
-
-volumes:
-  - name: prometheus-config
-    type: file
-    file: ./prometheus.yml
+      - key: PORT
+        value: 3000
