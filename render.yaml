@@ -4,8 +4,8 @@ services:
     plan: free
     runtime: docker
     dockerfilePath: ./Dockerfile
-    buildCommand: ""  
-    startCommand: ""
+    buildCommand: "npm run build"  
+    startCommand: "node dist/main"
     envVars:
     - key: PORT
       value: 3010
@@ -19,15 +19,3 @@ services:
     envVars:
       - key: PORT
         value: 9090
-
-  - name: grafana
-    type: web
-    env: docker
-    dockerfilePath: ./Dockerfile
-    buildCommand: ""
-    startCommand: ""
-    envVars:
-      - key: GF_SECURITY_ADMIN_PASSWORD
-        value: ${GRAFANA_ADMIN_PASSWORD}
-      - key: PORT
-        value: 3000
