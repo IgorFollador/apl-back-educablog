@@ -1,47 +1,51 @@
 services:
-  - name: app
-    type: web
+  - type: web
+    name: app
     env: docker
     dockerfilePath: ./Dockerfile
-    buildCommand: ""
-    startCommand: ""
+    port: 3010
     envVars:
-      - key: DATABASE_URL
-        fromService:
-          name: postgres
-          type: postgres
-          property: connectionString
-    ports:
-      - port: 3010
+      - key: POSTGRES_USER
+        fromDatabase: postgres
+        field: username
+      - key: POSTGRES_PASSWORD
+        fromDatabase: postgres
+        field: password
+      - key: POSTGRES_DB
+        fromDatabase: postgres
+        field: database
+    databases:
+      - name: postgres
 
-  - name: prometheus
-    type: web
+  - type: cron
+    name: prometheus
     env: docker
-    dockerfilePath: ./Dockerfile
-    buildCommand: ""
-    startCommand: "--config.file=/etc/prometheus/prometheus.yml"
-    mounts:
-      - path: /etc/prometheus/prometheus.yml
-        volume:
-          name: prometheus-config
-    ports:
-      - port: 9090
-
-  - name: grafana
-    type: web
-    env: docker
-    dockerfilePath: ./Dockerfile
-    buildCommand: ""
-    startCommand: ""
+    dockerfilePath: ./Dockerfile.prometheus
+    schedule: "@every 1m"
+    command: [ "--config.file=/etc/prometheus/prometheus.yml" ]
     envVars:
-      - key: GF_SECURITY_ADMIN_PASSWORD
-        value: ${GRAFANA_ADMIN_PASSWORD}
-    ports:
-      - port: 3000
-    dependencies:
-      - name: prometheus
+      - key: POSTGRES_USER
+        fromDatabase: postgres
+        field: username
+      - key: POSTGRES_PASSWORD
+        fromDatabase: postgres
+        field: password
+      - key: POSTGRES_DB
+        fromDatabase: postgres
+        field: database
 
-volumes:
-  - name: prometheus-config
-    type: file
-    file: ./prometheus.yml
+  - type: cron
+    name: grafana
+    env: docker
+    dockerfilePath: ./Dockerfile.grafana
+    schedule: "@every 1m"
+    envVars:
+      - key: POSTGRES_USER
+        fromDatabase: postgres
+        field: username
+      - key: POSTGRES_PASSWORD
+        fromDatabase: postgres
+        field: password
+      - key: POSTGRES_DB
+        fromDatabase: postgres
+        field: database
